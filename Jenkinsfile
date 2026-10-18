@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = 'vle7-monitoring-app'
         IMAGE_TAG = 'latest'
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        MINIKUBE_HOME = '/home/ubuntu'
     }
 
     stages {
@@ -18,6 +19,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} app/'
+            }
+        }
+
+        stage('Load Image into Minikube') {
+            steps {
+                sh 'minikube image load ${IMAGE_NAME}:${IMAGE_TAG} --profile=minikube'
             }
         }
 

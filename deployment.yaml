@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: nginx:latest
+          image: vle7-monitoring-app:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 80
 ---

@@ -1,13 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'vle7-monitoring-app'
-        IMAGE_TAG = 'latest'
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
-        MINIKUBE_HOME = '/home/ubuntu'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -18,31 +11,17 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} app/'
+                sh 'docker build -t vle7-monitoring-app:latest app/'
             }
         }
 
-        stage('Load Image into Minikube') {
-            steps {
-                sh 'minikube image load ${IMAGE_NAME}:${IMAGE_TAG} --profile=minikube'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
+        stage('Verify Kubernetes') {
             steps {
                 sh '''
-                    kubectl apply -f deployment.yaml
-                    kubectl rollout status deployment/myapp --timeout=180s
-                '''
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh '''
-                    kubectl get deployments
-                    kubectl get pods -l app=myapp
-                    kubectl get service myapp-service
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config get nodes
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config get deployments
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config get pods -l app=myapp
+                    kubectl --kubeconfig=/var/lib/jenkins/.kube/config get service myapp-service
                 '''
             }
         }
@@ -50,10 +29,10 @@ pipeline {
 
     post {
         success {
-            echo 'VLE-7 pipeline completed successfully.'
+            echo 'VLE-7 CI pipeline completed successfully.'
         }
         failure {
-            echo 'VLE-7 pipeline failed. Check the console output.'
+            echo 'Pipeline failed. Check the Console Output.'
         }
     }
 }
